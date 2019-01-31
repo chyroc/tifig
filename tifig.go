@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -24,6 +26,20 @@ func getBinPath() (string, error) {
 	}
 
 	return "", fmt.Errorf("%s not support tifig", runtime.GOOS)
+}
+
+func ConvertReader(input io.Reader, output string) (string, error) {
+	f, err := ioutil.TempFile("", "tifig-*.heic")
+	if err != nil {
+		return "", err
+	}
+	defer os.Remove(f.Name())
+
+	if _, err := io.Copy(f, input); err != nil {
+		return "", err
+	}
+
+	return Convert(f.Name(), output)
 }
 
 func Convert(input, output string) (string, error) {
